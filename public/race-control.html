@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Race Control - Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a3a, #0d1b2a);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        /* Mobile-first header */
+        .header {
+            background: rgba(30, 40, 50, 0.95);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 2px solid #3498db;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 100%;
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            color: #f5f5f5;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logout-btn {
+            padding: 0.6rem 1rem;
+            border-radius: 20px;
+            border: none;
+            background: rgba(44, 62, 80, 0.9);
+            color: #ecf0f1;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+            touch-action: manipulation;
+        }
+
+        .logout-btn:active {
+            transform: scale(0.95);
+            background: rgba(52, 73, 94, 0.9);
+        }
+
+        /* Mobile container */
+        .container {
+            padding: 1rem;
+            max-width: 100vw;
+        }
+
+        /* Status cards */
+        .status-section {
+            background: rgba(30, 40, 50, 0.8);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #2c3e50;
+        }
+
+        .connection-status {
+            text-align: center;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .connected {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .disconnected {
+            background-color: #c0392b;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        .section-title {
+            color: #f5f5f5;
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #34495e;
+        }
+
+        /* Session Selection */
+        .session-selector {
+            margin-bottom: 1rem;
+        }
+
+        .session-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #34495e;
+            border-radius: 8px;
+            background: rgba(20, 30, 40, 0.6);
+        }
+
+        .session-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #34495e;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .session-item:last-child {
+            border-bottom: none;
+        }
+
+        .session-item:active {
+            background: rgba(52, 152, 219, 0.2);
+        }
+
+        .session-item.selected {
+            background: rgba(52, 152, 219, 0.3);
+            border-left: 4px solid #3498db;
+        }
+
+        .session-info {
+            flex: 1;
+        }
+
+        .session-name {
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 0.2rem;
+        }
+
+        .session-drivers {
+            font-size: 0.8rem;
+            color: #95a5a6;
+        }
+
+        .select-btn {
+            background: rgba(52, 152, 219, 0.8);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .select-btn:active {
+            background: rgba(41, 128, 185, 0.9);
+            transform: scale(0.95);
+        }
+
+        .select-btn.selected {
+            background: rgba(39, 174, 96, 0.8);
+        }
+
+        /* Mobile-optimized button grid */
+        .control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            margin: 1rem 0;
+        }
+
+        .control-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.2rem 0.8rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #ecf0f1;
+            min-height: 80px;
+            position: relative;
+            font-weight: 600;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .control-btn .icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .control-btn .label {
+            font-size: 0.8rem;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        /* Button types */
+        .btn-start {
+            background: linear-gradient(135deg, #2980b9, #3498db);
+        }
+
+        .btn-start:active {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .btn-safe {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+
+        .btn-safe:active {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        .btn-caution {
+            background: linear-gradient(135deg, #f39c12, #f1c40f);
+            color: #000;
+        }
+
+        .btn-caution:active {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .btn-danger:active {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+        }
+
+        .btn-finish {
+            background: repeating-linear-gradient(45deg, #000, #000 8px, #fff 8px, #fff 16px);
+            color: #fff;
+            text-shadow: 0 0 3px #000, 0 0 5px #000;
+        }
+
+        .btn-end {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+        }
+
+        .btn-end:active {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+
+        /* Utility buttons */
+        .utility-section {
+            margin-top: 1.5rem;
+        }
+
+        .utility-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+        }
+
+        .utility-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            padding: 1rem;
+            border-radius: 10px;
+            border: none;
+            background: rgba(44, 62, 80, 0.8);
+            color: #ecf0f1;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            touch-action: manipulation;
+        }
+
+        .utility-btn:active {
+            background: rgba(52, 73, 94, 0.9);
+            transform: scale(0.98);
+        }
+
+        .utility-btn .icon {
+            font-size: 1.2rem;
+        }
+
+        /* Active state styling */
+        .active-mode {
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+            animation: activePulse 1.5s infinite;
+        }
+
+        @keyframes activePulse {
+            0%, 100% { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7); }
+            50% { box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.5); }
+        }
+
+        /* Session info */
+        .session-content {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .session-content p {
+            margin-bottom: 0.5rem;
+        }
+
+        .session-content ul {
+            margin-left: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .session-content li {
+            margin-bottom: 0.3rem;
+        }
+
+        /* Status indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-idle { background-color: #7f8c8d; }
+        .status-countdown { background-color: #f39c12; }
+        .status-racing { background-color: #2ecc71; }
+        .status-finished { background-color: #e74c3c; }
+
+        /* Disabled state */
+        .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Debug log for mobile */
+        .debug-section {
+            margin-top: 1.5rem;
+            background: rgba(30, 40, 50, 0.8);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid #34495e;
+        }
+
+        .debug-log {
+            max-height: 120px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.7rem;
+            background: rgba(20, 30, 40, 0.6);
+            padding: 0.8rem;
+            border-radius: 6px;
+            line-height: 1.3;
+        }
+
+        .log-info { color: #3498db; }
+        .log-success { color: #2ecc71; }
+        .log-error { color: #e74c3c; }
+
+        /* Animation for pulse */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        /* iOS safe area support */
+        @supports (padding: max(0px)) {
+            .header {
+                padding-top: max(1rem, env(safe-area-inset-top));
+            }
+
+            .container {
+                padding-bottom: max(1rem, env(safe-area-inset-bottom));
+            }
+        }
+
+        /* Landscape orientation adjustments */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .control-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .control-btn {
+                min-height: 60px;
+                padding: 0.8rem;
+            }
+
+            .control-btn .icon {
+                font-size: 1.4rem;
+                margin-bottom: 0.2rem;
+            }
+
+            .control-btn .label {
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Large phone adjustments */
+        @media (min-width: 410px) {
+            .control-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .control-btn {
+                min-height: 90px;
+            }
+
+            .utility-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Tablet adjustments */
+        @media (min-width: 768px) {
+            .container {
+                padding: 2rem;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            .control-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
+            }
+
+            .control-btn {
+                min-height: 100px;
+                padding: 1.5rem;
+            }
+
+            .control-btn .icon {
+                font-size: 2rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .control-btn .label {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="header-content">
+        <h1>
+            <span>🏁</span>
+            Race Control
+        </h1>
+        <button id="logoutBtn" class="logout-btn">
+            <span>🚪</span> Logout
+        </button>
+    </div>
+</div>
+
+<div class="container">
+    <div id="connectionStatus" class="connection-status disconnected">Disconnected</div>
+
+    <!-- Session Selection -->
+    <div class="status-section">
+        <h2 class="section-title">Select Session to Start</h2>
+        <div id="sessionSelector" class="session-selector">
+            <div id="sessionList" class="session-list">
+                <div class="empty-state">
+                    <p>No sessions available</p>
+                    <p>Sessions are created by Front Desk</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Session Status -->
+    <div class="status-section">
+        <h2 class="section-title">Current Race Status</h2>
+        <div id="currentSession" class="session-content">
+            <p>No active race session</p>
+        </div>
+    </div>
+
+    <!-- Race Control buttons -->
+    <div class="status-section">
+        <h2 class="section-title">Race Controls</h2>
+        <div class="control-grid">
+            <button id="startRace" class="control-btn btn-start">
+                <div class="icon">🏁</div>
+                <div class="label">Start Race</div>
+            </button>
+            <button id="safeMode" class="control-btn btn-safe">
+                <div class="icon">🟢</div>
+                <div class="label">Green Flag</div>
+            </button>
+            <button id="hazardMode" class="control-btn btn-caution">
+                <div class="icon">🟡</div>
+                <div class="label">Yellow Flag</div>
+            </button>
+            <button id="dangerMode" class="control-btn btn-danger">
+                <div class="icon">🔴</div>
+                <div class="label">Red Flag</div>
+            </button>
+            <button id="finishMode" class="control-btn btn-finish">
+                <div class="icon">🏁</div>
+                <div class="label">Checkered Flag</div>
+            </button>
+            <button id="endSession" class="control-btn btn-end">
+                <div class="icon">⏹️</div>
+                <div class="label">End Race</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Utility buttons -->
+    <div class="utility-section">
+        <h3 class="section-title">Utilities</h3>
+        <div class="utility-grid">
+            <button id="testConnection" class="utility-btn">
+                <span class="icon">📡</span>
+                <span>Test Connection</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Debug panel -->
+    <div class="debug-section">
+        <h3 class="section-title">System Log</h3>
+        <div id="debugLog" class="debug-log"></div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    class MobileRaceControl {
+        constructor() {
+            this.socket = io({
+                reconnection: true,
+                reconnectionAttempts: Infinity,
+                reconnectionDelay: 1000,
+                reconnectionDelayMax: 5000,
+                randomizationFactor: 0.5,
+                transports: ['websocket']
+            });
+
+            this.currentState = null;
+            this.availableSessions = [];
+            this.selectedSessionId = null;
+
+            this.initializeElements();
+            this.setupEventListeners();
+            this.setupSocketListeners();
+
+            this.logToDebug('Mobile Race Control initialized', 'success');
+            this.updateConnectionStatus(false);
+        }
+
+        initializeElements() {
+            this.startRaceBtn = document.getElementById('startRace');
+            this.endSessionBtn = document.getElementById('endSession');
+            this.modeButtons = {
+                safe: document.getElementById('safeMode'),
+                hazard: document.getElementById('hazardMode'),
+                danger: document.getElementById('dangerMode'),
+                finish: document.getElementById('finishMode')
+            };
+            this.currentSessionEl = document.getElementById('currentSession');
+            this.sessionListEl = document.getElementById('sessionList');
+            this.testConnectionBtn = document.getElementById('testConnection');
+            this.debugLog = document.getElementById('debugLog');
+            this.connectionStatusEl = document.getElementById('connectionStatus');
+            this.logoutBtn = document.getElementById('logoutBtn');
+        }
+
+        setupEventListeners() {
+            // Logout
+            this.logoutBtn.addEventListener('click', async () => {
+                try {
+                    await fetch('/logout', { method: 'POST' });
+                    window.location.href = '/';
+                } catch (error) {
+                    this.logToDebug(`Logout error: ${error.message}`, 'error');
+                    window.location.href = '/';
+                }
+            });
+
+            // Race controls with haptic feedback
+            this.startRaceBtn.addEventListener('click', () => {
+                this.vibrate();
+                this.logToDebug('Start Race button pressed');
+                this.socket.emit('admin_start_race');
+            });
+
+            this.endSessionBtn.addEventListener('click', () => {
+                this.vibrate();
+                this.logToDebug('End Session button pressed');
+                // Add confirmation for ending race
+                if (confirm('Are you sure you want to end the current race?')) {
+                    this.socket.emit('admin_finish_race');
+                }
+            });
+
+            // Mode buttons
+            Object.entries(this.modeButtons).forEach(([mode, button]) => {
+                button.addEventListener('click', () => {
+                    this.vibrate();
+                    this.logToDebug(`${mode.charAt(0).toUpperCase() + mode.slice(1)} flag activated`);
+
+                    const flagMappings = {
+                        safe: 'green',
+                        hazard: 'yellow',
+                        danger: 'red',
+                        finish: 'checkered'
+                    };
+
+                    this.socket.emit('admin_set_flag', flagMappings[mode]);
+                });
+            });
+
+            // Utility buttons
+            this.testConnectionBtn.addEventListener('click', () => {
+                this.vibrate();
+                this.logToDebug('Testing connection...');
+                this.socket.emit('admin_set_flag', 'green');
+                this.logToDebug('Connection test completed', 'success');
+            });
+        }
+
+        setupSocketListeners() {
+            this.socket.on('connect', () => {
+                this.logToDebug('Connected to race server', 'success');
+                this.updateConnectionStatus(true);
+            });
+
+            this.socket.on('disconnect', (reason) => {
+                this.logToDebug(`Disconnected: ${reason}`, 'error');
+                this.updateConnectionStatus(false);
+            });
+
+            this.socket.on('state_update', (state) => {
+                this.currentState = state;
+                this.updateUI(state);
+            });
+
+            this.socket.on('sessions_update', (sessions) => {
+                this.availableSessions = sessions;
+                this.renderSessionList(sessions);
+                this.logToDebug(`Sessions auto-updated: ${sessions.length} available`, 'success');
+            });
+
+            this.socket.on('error_message', (message) => {
+                this.logToDebug(`Server error: ${message}`, 'error');
+            });
+        }
+
+        renderSessionList(sessions) {
+            if (!sessions || sessions.length === 0) {
+                this.sessionListEl.innerHTML = `
+                    <div class="empty-state">
+                        <p>No sessions available</p>
+                        <p>Sessions are created by Front Desk</p>
+                    </div>
+                `;
+                return;
+            }
+
+            this.sessionListEl.innerHTML = '';
+            sessions.forEach(session => {
+                const sessionItem = document.createElement('div');
+                sessionItem.className = 'session-item';
+                if (this.selectedSessionId === session.id) {
+                    sessionItem.classList.add('selected');
+                }
+
+                sessionItem.innerHTML = `
+                    <div class="session-info">
+                        <div class="session-name">${session.name}</div>
+                        <div class="session-drivers">${session.drivers.length} drivers</div>
+                    </div>
+                    <button class="select-btn ${this.selectedSessionId === session.id ? 'selected' : ''}"
+                            data-session-id="${session.id}">
+                        ${this.selectedSessionId === session.id ? '✓ Selected' : 'Select'}
+                    </button>
+                `;
+
+                // Add click handler for session selection
+                const selectBtn = sessionItem.querySelector('.select-btn');
+                selectBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.selectSession(session.id);
+                });
+
+                this.sessionListEl.appendChild(sessionItem);
+            });
+        }
+
+        selectSession(sessionId) {
+            this.vibrate();
+            this.selectedSessionId = sessionId;
+            const session = this.availableSessions.find(s => s.id === sessionId);
+
+            if (session) {
+                this.logToDebug(`Selected session: ${session.name}`, 'success');
+                this.socket.emit('admin_set_next_race', sessionId);
+                this.renderSessionList(this.availableSessions); // Re-render to show selection
+            }
+        }
+
+        updateUI(state) {
+            this.updateSessionInfo(state);
+            this.updateButtonStates(state);
+            this.updateModeButtons(state);
+
+            // Update selected session ID based on current race
+            if (state.currentRace && state.currentRace.id !== this.selectedSessionId) {
+                this.selectedSessionId = state.currentRace.id;
+                this.renderSessionList(this.availableSessions);
+                this.logToDebug(`Session auto-updated to: ${state.currentRace.name}`, 'info');
+            }
+        }
+
+        updateSessionInfo(state) {
+            if (state.currentRace) {
+                let sessionHTML = `
+                    <p><span class="status-indicator status-${state.raceMode}"></span><strong>Status:</strong> ${state.raceMode.toUpperCase()}</p>
+                    <p><strong>Race:</strong> ${state.currentRace.name || state.currentRace.id}</p>
+                `;
+
+                if (state.currentRace.drivers && state.currentRace.drivers.length > 0) {
+                    sessionHTML += '<p><strong>Drivers:</strong></p><ul>';
+                    state.currentRace.drivers.forEach(driver => {
+                        sessionHTML += `<li>${driver.name} (${driver.car || 'No car'})</li>`;
+                    });
+                    sessionHTML += '</ul>';
+                } else {
+                    sessionHTML += '<p>No drivers assigned</p>';
+                }
+
+                this.currentSessionEl.innerHTML = sessionHTML;
+            } else {
+                this.currentSessionEl.innerHTML = '<p>No active race session selected</p>';
+            }
+        }
+
+        updateButtonStates(state) {
+            const hasCurrentRace = state.currentRace;
+            const isIdle = state.raceMode === 'idle';
+            const isRacing = state.raceMode === 'racing';
+
+            // Update button availability
+            this.startRaceBtn.classList.toggle('disabled', !hasCurrentRace || !isIdle);
+            this.endSessionBtn.classList.toggle('disabled', !isRacing);
+
+            // Update button states based on race mode
+            if (isRacing) {
+                this.startRaceBtn.classList.add('active-mode');
+            } else {
+                this.startRaceBtn.classList.remove('active-mode');
+            }
+        }
+
+        updateModeButtons(state) {
+            // Update active mode indicators
+            Object.entries(this.modeButtons).forEach(([mode, button]) => {
+                const flagMappings = {
+                    safe: 'green',
+                    hazard: 'yellow',
+                    danger: 'red',
+                    finish: 'checkered'
+                };
+
+                if (state.flag === flagMappings[mode]) {
+                    button.classList.add('active-mode');
+                } else {
+                    button.classList.remove('active-mode');
+                }
+            });
+        }
+
+        vibrate(pattern = 50) {
+            // Haptic feedback for mobile devices
+            if ('vibrate' in navigator) {
+                navigator.vibrate(pattern);
+            }
+        }
+
+        logToDebug(message, type = 'info') {
+            const entry = document.createElement('div');
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            entry.className = `log-${type}`;
+            this.debugLog.appendChild(entry);
+            this.debugLog.scrollTop = this.debugLog.scrollHeight;
+
+            // Keep log size manageable on mobile
+            while (this.debugLog.children.length > 50) {
+                this.debugLog.removeChild(this.debugLog.firstChild);
+            }
+        }
+
+        updateConnectionStatus(connected) {
+            if (connected) {
+                this.connectionStatusEl.textContent = '🟢 Connected';
+                this.connectionStatusEl.className = 'connection-status connected';
+            } else {
+                this.connectionStatusEl.textContent = '🔴 Disconnected';
+                this.connectionStatusEl.className = 'connection-status disconnected';
+            }
+        }
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        new MobileRaceControl();
+    });
+
+    // Prevent zoom on iOS
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('gesturechange', e => e.preventDefault());
+    document.addEventListener('gestureend', e => e.preventDefault());
+</script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Race Countdown - Public Display</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #2c1810 50%, #8b0000 100%);
+      color: #fff;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Fullscreen button */
+    .fullscreen-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(45deg, #e74c3c, #c0392b);
+      border: none;
+      color: #fff;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .fullscreen-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
+    }
+
+    /* Main countdown display */
+    .countdown-container {
+      text-align: center;
+      max-width: 90%;
+    }
+
+    .title {
+      font-size: clamp(3rem, 8vw, 8rem);
+      background: linear-gradient(45deg, #ff6b35, #ffcc00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 2rem;
+      text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      animation: titlePulse 2s ease-in-out infinite;
+    }
+
+    .countdown-display {
+      font-size: clamp(8rem, 20vw, 25rem);
+      font-weight: bold;
+      color: #ff0000;
+      text-shadow:
+              0 0 20px #ff0000,
+              0 0 40px #ff0000,
+              0 0 60px #ff0000;
+      margin: 2rem 0;
+      animation: countdownPulse 1s ease-in-out infinite;
+    }
+
+    .countdown-text {
+      font-size: clamp(2rem, 5vw, 5rem);
+      color: #ffcc00;
+      margin: 2rem 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .race-info {
+      margin-top: 3rem;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .race-name {
+      font-size: clamp(2rem, 4vw, 4rem);
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+
+    .drivers-ready {
+      font-size: clamp(1.5rem, 3vw, 3rem);
+      color: #2ecc71;
+      margin-top: 1rem;
+    }
+
+    /* Pre-race state */
+    .pre-race {
+      text-align: center;
+    }
+
+    .pre-race-icon {
+      font-size: clamp(8rem, 15vw, 15rem);
+      margin-bottom: 2rem;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .pre-race-text {
+      font-size: clamp(3rem, 6vw, 6rem);
+      color: #3498db;
+      margin-bottom: 1rem;
+    }
+
+    .pre-race-subtext {
+      font-size: clamp(1.5rem, 3vw, 3rem);
+      color: #95a5a6;
+    }
+
+    /* Racing state */
+    .racing-display {
+      text-align: center;
+    }
+
+    .racing-title {
+      font-size: clamp(4rem, 8vw, 8rem);
+      background: linear-gradient(45deg, #27ae60, #2ecc71);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 2rem;
+      animation: racingPulse 1.5s ease-in-out infinite;
+    }
+
+    .race-timer {
+      font-size: clamp(6rem, 12vw, 12rem);
+      font-weight: bold;
+      color: #27ae60;
+      font-family: 'Courier New', monospace;
+      text-shadow:
+              0 0 10px #27ae60,
+              0 0 20px #27ae60;
+      margin: 2rem 0;
+    }
+
+    /* Animations */
+    @keyframes titlePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes countdownPulse {
+      0%, 100% {
+        transform: scale(1);
+        text-shadow:
+                0 0 20px #ff0000,
+                0 0 40px #ff0000,
+                0 0 60px #ff0000;
+      }
+      50% {
+        transform: scale(1.1);
+        text-shadow:
+                0 0 30px #ff0000,
+                0 0 60px #ff0000,
+                0 0 90px #ff0000;
+      }
+    }
+
+    @keyframes racingPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    @keyframes backgroundShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Dynamic backgrounds */
+    .countdown-active {
+      background: linear-gradient(135deg, #0a0a0a, #2c1810, #8b0000, #ff0000);
+      background-size: 400% 400%;
+      animation: backgroundShift 3s ease infinite;
+    }
+
+    .racing-active {
+      background: linear-gradient(135deg, #0a0a0a, #1a5025, #27ae60);
+      background-size: 400% 400%;
+      animation: backgroundShift 5s ease infinite;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .race-info {
+        padding: 1rem;
+        margin-top: 2rem;
+      }
+    }
+
+    /* Fullscreen styles */
+    :fullscreen .fullscreen-btn,
+    :-webkit-full-screen .fullscreen-btn,
+    :-moz-full-screen .fullscreen-btn {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<button class="fullscreen-btn" onclick="toggleFullscreen()">
+  📺 Full Screen
+</button>
+
+<div class="countdown-container">
+  <div id="displayContent">
+    <!-- Content will be populated by JavaScript -->
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  class RaceCountdownDisplay {
+    constructor() {
+      this.socket = io();
+      this.currentState = null;
+      this.countdownInterval = null;
+      this.raceTimerInterval = null;
+      this.countdownValue = 0;
+
+      this.initializeElements();
+      this.setupSocketListeners();
+    }
+
+    initializeElements() {
+      this.displayContent = document.getElementById('displayContent');
+    }
+
+    setupSocketListeners() {
+      this.socket.on('connect', () => {
+        console.log('Connected to race server');
+      });
+
+      this.socket.on('state_update', (state) => {
+        this.currentState = state;
+        this.updateDisplay(state);
+      });
+    }
+
+    updateDisplay(state) {
+      document.body.className = ''; // Reset body classes
+
+      switch (state.raceMode) {
+        case 'countdown':
+          this.showCountdown(state);
+          document.body.classList.add('countdown-active');
+          break;
+        case 'racing':
+          this.showRacing(state);
+          document.body.classList.add('racing-active');
+          break;
+        case 'finished':
+          this.showFinished(state);
+          break;
+        default:
+          this.showPreRace(state);
+      }
+    }
+
+    showCountdown(state) {
+      this.startCountdownTimer();
+
+      this.displayContent.innerHTML = `
+                    <div class="title">🏁 RACE STARTING</div>
+                    <div class="countdown-display" id="countdownNumber">${this.countdownValue}</div>
+                    <div class="countdown-text">SECONDS</div>
+
+                    ${state.currentRace ? `
+                        <div class="race-info">
+                            <div class="race-name">${state.currentRace.name || `Race ${state.currentRace.id}`}</div>
+                            ${state.currentRace.drivers ? `
+                                <div class="drivers-ready">
+                                    ${state.currentRace.drivers.length} DRIVERS READY
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                `;
+    }
+
+    showRacing(state) {
+      this.stopCountdownTimer();
+      this.startRaceTimer(state.currentRace?.startTime);
+
+      this.displayContent.innerHTML = `
+                    <div class="racing-display">
+                        <div class="racing-title">🏁 RACE IN PROGRESS</div>
+                        <div class="race-timer" id="raceTimer">00:00</div>
+
+                        ${state.currentRace ? `
+                            <div class="race-info">
+                                <div class="race-name">${state.currentRace.name || `Race ${state.currentRace.id}`}</div>
+                                ${state.currentRace.drivers ? `
+                                    <div class="drivers-ready">
+                                        ${state.currentRace.drivers.length} DRIVERS RACING
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+    }
+
+    showFinished(state) {
+      this.stopCountdownTimer();
+      this.stopRaceTimer();
+
+      this.displayContent.innerHTML = `
+                    <div class="racing-display">
+                        <div class="racing-title" style="background: linear-gradient(45deg, #f1c40f, #e67e22); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            🏁 RACE FINISHED
+                        </div>
+
+                        ${state.currentRace ? `
+                            <div class="race-info">
+                                <div class="race-name">${state.currentRace.name || `Race ${state.currentRace.id}`}</div>
+                                <div class="drivers-ready" style="color: #f1c40f;">
+                                    RACE COMPLETE
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+    }
+
+    showPreRace(state) {
+      this.stopCountdownTimer();
+      this.stopRaceTimer();
+
+      if (state.currentRace) {
+        this.displayContent.innerHTML = `
+                        <div class="pre-race">
+                            <div class="pre-race-icon">🏎️</div>
+                            <div class="pre-race-text">RACE READY</div>
+                            <div class="race-info">
+                                <div class="race-name">${state.currentRace.name || `Race ${state.currentRace.id}`}</div>
+                                ${state.currentRace.drivers ? `
+                                    <div class="drivers-ready">
+                                        ${state.currentRace.drivers.length} DRIVERS REGISTERED
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="pre-race-subtext">Waiting for race start</div>
+                        </div>
+                    `;
+      } else {
+        this.displayContent.innerHTML = `
+                        <div class="pre-race">
+                            <div class="pre-race-icon">🏁</div>
+                            <div class="pre-race-text">NO ACTIVE RACE</div>
+                            <div class="pre-race-subtext">Waiting for next race setup</div>
+                        </div>
+                    `;
+      }
+    }
+
+    startCountdownTimer() {
+      if (this.countdownInterval) return;
+
+      this.countdownValue = 10; // Start countdown from 10 seconds
+
+      this.countdownInterval = setInterval(() => {
+        const countdownEl = document.getElementById('countdownNumber');
+        if (countdownEl) {
+          countdownEl.textContent = this.countdownValue;
+
+          // Change color as countdown progresses
+          if (this.countdownValue <= 3) {
+            countdownEl.style.color = '#ff0000';
+            countdownEl.style.textShadow = `
+                                0 0 30px #ff0000,
+                                0 0 60px #ff0000,
+                                0 0 90px #ff0000
+                            `;
+          } else if (this.countdownValue <= 5) {
+            countdownEl.style.color = '#ff6600';
+            countdownEl.style.textShadow = `
+                                0 0 20px #ff6600,
+                                0 0 40px #ff6600,
+                                0 0 60px #ff6600
+                            `;
+          }
+        }
+
+        this.countdownValue--;
+
+        if (this.countdownValue < 0) {
+          this.countdownValue = 0;
+        }
+      }, 1000);
+    }
+
+    stopCountdownTimer() {
+      if (this.countdownInterval) {
+        clearInterval(this.countdownInterval);
+        this.countdownInterval = null;
+      }
+    }
+
+    startRaceTimer(startTime) {
+      if (this.raceTimerInterval) return;
+
+      this.raceTimerInterval = setInterval(() => {
+        const timerEl = document.getElementById('raceTimer');
+        if (timerEl && startTime) {
+          const elapsed = Date.now() - startTime;
+          const minutes = Math.floor(elapsed / 60000);
+          const seconds = Math.floor((elapsed % 60000) / 1000);
+          timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+      }, 1000);
+    }
+
+    stopRaceTimer() {
+      if (this.raceTimerInterval) {
+        clearInterval(this.raceTimerInterval);
+        this.raceTimerInterval = null;
+      }
+    }
+  }
+
+  // Fullscreen functionality
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.log(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  // Initialize when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    new RaceCountdownDisplay();
+  });
+</script>
+</body>
+</html>

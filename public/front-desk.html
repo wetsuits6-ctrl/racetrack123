@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Beachside Racetrack Receptionist</title>
+    <style>
+        /* Base styles matching your race control design */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a2a3a, #0d1b2a);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Header section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(30, 40, 50, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            margin: 0;
+            color: #f5f5f5;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-icon {
+            color: #3498db;
+            font-size: 2rem;
+        }
+
+        /* Logout button matching your utility button style */
+        #logoutBtn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(44, 62, 80, 0.8);
+            color: #ecf0f1;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+            font-size: 0.9rem;
+        }
+
+        #logoutBtn:hover {
+            background: rgba(52, 73, 94, 0.9);
+            transform: translateY(-2px);
+        }
+
+        /* Session creation section */
+        .session-creator {
+            padding: 20px;
+            background: rgba(30, 40, 50, 0.7);
+            border: 1px solid #2c3e50;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-title {
+            color: #f5f5f5;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #34495e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #ecf0f1;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #34495e;
+            border-radius: 6px;
+            background: rgba(20, 30, 40, 0.7);
+            color: #ecf0f1;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        /* Button styles matching your design */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2980b9, #3498db);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12, #f1c40f);
+            color: #000;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(243, 156, 18, 0.3);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        /* Sessions list */
+        .sessions-section {
+            padding: 20px;
+            background: rgba(30, 40, 50, 0.7);
+            border: 1px solid #2c3e50;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .session {
+            background: rgba(44, 62, 80, 0.6);
+            border: 1px solid #34495e;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .session:hover {
+            background: rgba(44, 62, 80, 0.8);
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(52, 73, 94, 0.5);
+            border-bottom: 1px solid #34495e;
+        }
+
+        .session-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #3498db;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .session-stats {
+            font-size: 0.9rem;
+            color: #95a5a6;
+        }
+
+        /* Drivers section */
+        .drivers-section {
+            padding: 20px;
+        }
+
+        .add-driver-form {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(52, 73, 94, 0.3);
+            border-radius: 6px;
+            flex-wrap: wrap;
+        }
+
+        .add-driver-form .input-group {
+            min-width: 140px;
+        }
+
+        .add-driver-form .input-group:first-child {
+            min-width: 160px;
+            max-width: 200px;
+            flex: 0 0 auto; /* Fixed size, don't grow */
+        }
+
+        .add-driver-form .input-group:nth-child(2) {
+            min-width: 120px;
+            max-width: 140px;
+            flex: 0 0 auto; /* Don't grow, stay small */
+            margin-left: auto; /* Push to the right */
+        }
+
+        .drivers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .driver-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: rgba(52, 73, 94, 0.4);
+            border: 1px solid #34495e;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            gap: 15px;
+            min-height: 60px;
+        }
+
+        .driver-item:hover {
+            background: rgba(52, 73, 94, 0.6);
+            border-color: #3498db;
+        }
+
+        .driver-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            min-width: 0; /* Allows flex item to shrink below content size */
+        }
+
+        .driver-name {
+            font-weight: bold;
+            color: #ecf0f1;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .driver-car {
+            color: #3498db;
+            font-weight: 600;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .driver-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .car-selector {
+            min-width: 120px;
+        }
+
+        /* Status indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active { background-color: #2ecc71; }
+        .status-ready { background-color: #f1c40f; }
+        .status-empty { background-color: #95a5a6; }
+
+        /* Empty states */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .form-group {
+                flex-direction: column;
+            }
+
+            .session-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .add-driver-form {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .add-driver-form .input-group {
+                min-width: unset;
+                width: 100%;
+            }
+
+            .driver-item {
+                flex-direction: column;
+                gap: 15px;
+                text-align: left;
+                align-items: stretch;
+            }
+
+            .driver-info {
+                gap: 8px;
+            }
+
+            .driver-controls {
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            .car-selector {
+                flex: 1;
+                margin-right: 10px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .session {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Success/Error states */
+        .success-message {
+            padding: 10px 15px;
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            border-radius: 6px;
+            color: #2ecc71;
+            margin-bottom: 15px;
+        }
+
+        .error-message {
+            padding: 10px 15px;
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            border-radius: 6px;
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1>
+            <span class="header-icon">🏁</span>
+            Beachside Racetrack Receptionist
+        </h1>
+        <button id="logoutBtn" class="btn btn-secondary">
+            <span>🚪</span>
+            Logout
+        </button>
+    </div>
+
+    <!-- Session Creator -->
+    <div class="session-creator">
+        <h2 class="section-title">
+            <span>➕</span>
+            Create New Session
+        </h2>
+        <div class="form-group">
+            <div class="input-group">
+                <label for="sessionName">Session Name</label>
+                <input type="text" id="sessionName" placeholder="Enter session name" />
+            </div>
+            <button id="addSessionBtn" class="btn btn-primary">
+                <span>➕</span>
+                Create Session
+            </button>
+        </div>
+    </div>
+
+    <!-- Active Sessions -->
+    <div class="sessions-section">
+        <h2 class="section-title">
+            <span>🏎️</span>
+            Active Sessions
+        </h2>
+        <div id="sessions"></div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    class FrontDeskManager {
+        constructor() {
+            this.socket = io();
+            this.allCars = [
+                'Audi', 'BMW', 'Mazda', 'Lada',
+                'Ferrari', 'Porsche', 'Mercedes', 'Toyota',
+                'Honda', 'Nissan', 'Ford', 'Volkswagen'
+            ];
+
+            this.initializeElements();
+            this.setupEventListeners();
+            this.setupSocketListeners();
+        }
+
+        initializeElements() {
+            this.sessionsDiv = document.getElementById('sessions');
+            this.addSessionBtn = document.getElementById('addSessionBtn');
+            this.sessionNameInput = document.getElementById('sessionName');
+            this.logoutBtn = document.getElementById('logoutBtn');
+        }
+
+        setupEventListeners() {
+            this.addSessionBtn.addEventListener('click', () => this.addSession());
+            this.sessionNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.addSession();
+            });
+            this.logoutBtn.addEventListener('click', () => this.logout());
+        }
+
+        setupSocketListeners() {
+            this.socket.on('sessions_update', (sessions) => {
+                this.renderSessions(sessions);
+            });
+
+            this.socket.on('error_message', (message) => {
+                this.showAlert(message, 'error');
+            });
+
+            this.socket.on('connect', () => {
+                console.log('Connected to server');
+            });
+
+            this.socket.on('disconnect', () => {
+                console.log('Disconnected from server');
+            });
+        }
+
+        addSession() {
+            const name = this.sessionNameInput.value.trim();
+            if (!name) {
+                this.showAlert('Please enter a session name', 'error');
+                return;
+            }
+
+            this.socket.emit('add_session', name);
+            this.sessionNameInput.value = '';
+        }
+
+        async logout() {
+            try {
+                await fetch('/logout', { method: 'POST' });
+                window.location.href = '/';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/';
+            }
+        }
+
+        renderSessions(sessions) {
+            if (sessions.length === 0) {
+                this.sessionsDiv.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🏁</div>
+                            <p>No active sessions</p>
+                            <p>Create a new session to get started</p>
+                        </div>
+                    `;
+                return;
+            }
+
+            this.sessionsDiv.innerHTML = '';
+            sessions.forEach(session => {
+                const sessionEl = this.createSessionElement(session);
+                this.sessionsDiv.appendChild(sessionEl);
+            });
+        }
+
+        createSessionElement(session) {
+            const sessionEl = document.createElement('div');
+            sessionEl.className = 'session';
+
+            // Header
+            const headerEl = document.createElement('div');
+            headerEl.className = 'session-header';
+
+            const nameSection = document.createElement('div');
+            nameSection.className = 'session-name';
+
+            const statusIndicator = document.createElement('span');
+            statusIndicator.className = 'status-indicator';
+            if (session.drivers.length === 0) {
+                statusIndicator.classList.add('status-empty');
+            } else if (session.drivers.length < 4) {
+                statusIndicator.classList.add('status-ready');
+            } else {
+                statusIndicator.classList.add('status-active');
+            }
+
+            nameSection.appendChild(statusIndicator);
+            nameSection.appendChild(document.createTextNode(session.name));
+
+            const statsSection = document.createElement('div');
+            statsSection.className = 'session-stats';
+            statsSection.textContent = `${session.drivers.length} drivers`;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'btn btn-danger btn-small';
+            removeBtn.innerHTML = '<span>🗑️</span> Remove Session';
+            removeBtn.onclick = () => {
+                if (confirm(`Are you sure you want to remove "${session.name}"?`)) {
+                    this.socket.emit('remove_session', session.id);
+                }
+            };
+
+            headerEl.appendChild(nameSection);
+            headerEl.appendChild(statsSection);
+            headerEl.appendChild(removeBtn);
+
+            // Drivers Section
+            const driversSection = document.createElement('div');
+            driversSection.className = 'drivers-section';
+
+            // Add Driver Form
+            const addDriverForm = this.createAddDriverForm(session);
+            driversSection.appendChild(addDriverForm);
+
+            // Drivers List
+            const driversList = this.createDriversList(session);
+            driversSection.appendChild(driversList);
+
+            sessionEl.appendChild(headerEl);
+            sessionEl.appendChild(driversSection);
+
+            return sessionEl;
+        }
+
+        createAddDriverForm(session) {
+            const formEl = document.createElement('div');
+            formEl.className = 'add-driver-form';
+
+            // Driver name input
+            const nameGroup = document.createElement('div');
+            nameGroup.className = 'input-group';
+
+            const nameLabel = document.createElement('label');
+            nameLabel.textContent = 'Driver Name';
+
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.placeholder = 'Enter driver name';
+            nameInput.maxLength = 30; // Add character limit
+
+            // Real-time validation for driver names
+            nameInput.addEventListener('input', (e) => {
+                const value = e.target.value;
+                const isValid = /^[a-zA-Z\s\-']*$/.test(value);
+
+                if (!isValid && value.length > 0) {
+                    e.target.style.borderColor = '#e74c3c';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(231, 76, 60, 0.2)';
+                } else {
+                    e.target.style.borderColor = '#34495e';
+                    e.target.style.boxShadow = 'none';
+                }
+            });
+
+            nameGroup.appendChild(nameLabel);
+            nameGroup.appendChild(nameInput);
+
+            // Car selection with better auto-assign logic
+            const carGroup = document.createElement('div');
+            carGroup.className = 'input-group';
+
+            const carLabel = document.createElement('label');
+            carLabel.textContent = 'Car Assignment';
+
+            const carSelect = document.createElement('select');
+            carSelect.className = 'car-selector';
+
+            // Auto-assign option with better description
+            const autoOption = document.createElement('option');
+            autoOption.value = 'auto-assign';
+            autoOption.textContent = '🎯 Random Auto-assign';
+            autoOption.selected = true;
+            carSelect.appendChild(autoOption);
+
+            // Available cars with better visual indicators
+            const usedCars = session.drivers.map(d => d.car).filter(Boolean);
+            const availableCars = this.allCars.filter(car => !usedCars.includes(car));
+
+            // Show available cars
+            availableCars.forEach(car => {
+                const option = document.createElement('option');
+                option.value = car;
+                option.textContent = `🚗 ${car}`;
+                carSelect.appendChild(option);
+            });
+
+            // Show used cars as disabled for reference
+            if (usedCars.length > 0) {
+                const separator = document.createElement('option');
+                separator.disabled = true;
+                separator.textContent = '--- Already Assigned ---';
+                carSelect.appendChild(separator);
+
+                usedCars.forEach(car => {
+                    const option = document.createElement('option');
+                    option.value = car;
+                    option.textContent = `🚫 ${car} (In Use)`;
+                    option.disabled = true;
+                    carSelect.appendChild(option);
+                });
+            }
+
+            carGroup.appendChild(carLabel);
+            carGroup.appendChild(carSelect);
+
+            // Enhanced add button with better validation
+            const addBtn = document.createElement('button');
+            addBtn.className = 'btn btn-primary btn-small';
+            addBtn.innerHTML = '<span>➕</span> Add Driver';
+
+            const handleAddDriver = () => {
+                const driverName = nameInput.value.trim();
+                const selectedCar = carSelect.value;
+
+                // Enhanced client-side validation
+                if (!driverName) {
+                    this.showAlert('Please enter a driver name', 'error');
+                    nameInput.focus();
+                    return;
+                }
+
+                if (driverName.length < 2) {
+                    this.showAlert('Driver name must be at least 2 characters', 'error');
+                    nameInput.focus();
+                    return;
+                }
+
+                if (driverName.length > 30) {
+                    this.showAlert('Driver name too long (max 30 characters)', 'error');
+                    nameInput.focus();
+                    return;
+                }
+
+                if (!/^[a-zA-Z\s\-']+$/.test(driverName)) {
+                    this.showAlert('Driver name contains invalid characters. Use only letters, spaces, hyphens, and apostrophes.', 'error');
+                    nameInput.focus();
+                    return;
+                }
+
+                // Check for duplicate names (case-insensitive)
+                if (session.drivers.find(d => d.name.toLowerCase() === driverName.toLowerCase())) {
+                    this.showAlert('Driver name must be unique in this session', 'error');
+                    nameInput.focus();
+                    return;
+                }
+
+                // Check maximum drivers per session
+                if (session.drivers.length >= 8) {
+                    this.showAlert('Maximum 8 drivers per session', 'error');
+                    return;
+                }
+
+                // Show loading state
+                addBtn.disabled = true;
+                addBtn.innerHTML = '<span>⏳</span> Adding...';
+
+                // Send to server (server will handle random auto-assignment)
+                this.socket.emit('add_driver', {
+                    sessionId: session.id,
+                    driverName: driverName,
+                    car: selectedCar === 'auto-assign' ? null : selectedCar
+                });
+
+                // Reset form and validation styling
+                nameInput.value = '';
+                carSelect.value = 'auto-assign';
+                nameInput.style.borderColor = '#34495e';
+                nameInput.style.boxShadow = 'none';
+
+                // Reset button after timeout
+                setTimeout(() => {
+                    addBtn.disabled = false;
+                    addBtn.innerHTML = '<span>➕</span> Add Driver';
+                }, 2000);
+            };
+
+            addBtn.onclick = handleAddDriver;
+
+            // Enter key support
+            nameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleAddDriver();
+                }
+            });
+
+            formEl.appendChild(nameGroup);
+            formEl.appendChild(carGroup);
+            formEl.appendChild(addBtn);
+
+            return formEl;
+        }
+
+        createDriversList(session) {
+            const listEl = document.createElement('div');
+            listEl.className = 'drivers-list';
+
+            if (session.drivers.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                        <div class="empty-state-icon">👤</div>
+                        <p>No drivers added yet</p>
+                    `;
+                listEl.appendChild(emptyState);
+                return listEl;
+            }
+
+            session.drivers.forEach(driver => {
+                const driverItem = this.createDriverItem(session, driver);
+                listEl.appendChild(driverItem);
+            });
+
+            return listEl;
+        }
+
+        createDriverItem(session, driver) {
+            const itemEl = document.createElement('div');
+            itemEl.className = 'driver-item';
+
+            // Driver info
+            const infoEl = document.createElement('div');
+            infoEl.className = 'driver-info';
+
+            const nameEl = document.createElement('div');
+            nameEl.className = 'driver-name';
+            nameEl.textContent = driver.name;
+
+            const carEl = document.createElement('div');
+            carEl.className = 'driver-car';
+            carEl.textContent = driver.car ? `🚗 ${driver.car}` : '🎯 Auto-assigned on race start';
+
+            infoEl.appendChild(nameEl);
+            infoEl.appendChild(carEl);
+
+            // Controls
+            const controlsEl = document.createElement('div');
+            controlsEl.className = 'driver-controls';
+
+            // Enhanced car selector
+            const carSelect = document.createElement('select');
+            carSelect.className = 'car-selector';
+
+            // Auto-assign option
+            const autoOption = document.createElement('option');
+            autoOption.value = 'auto-assign';
+            autoOption.textContent = '🎯 Random Auto-assign';
+            if (!driver.car) autoOption.selected = true;
+            carSelect.appendChild(autoOption);
+
+            // Available cars (excluding cars used by other drivers)
+            const carsUsedByOthers = session.drivers
+                .filter(d => d.name !== driver.name)
+                .map(d => d.car)
+                .filter(Boolean);
+            const availableCars = this.allCars.filter(car => !carsUsedByOthers.includes(car));
+
+            availableCars.forEach(car => {
+                const option = document.createElement('option');
+                option.value = car;
+                option.textContent = `🚗 ${car}`;
+                if (car === driver.car) option.selected = true;
+                carSelect.appendChild(option);
+            });
+
+            // Show unavailable cars for reference
+            if (carsUsedByOthers.length > 0) {
+                const separator = document.createElement('option');
+                separator.disabled = true;
+                separator.textContent = '--- Used by Others ---';
+                carSelect.appendChild(separator);
+
+                carsUsedByOthers.forEach(car => {
+                    const option = document.createElement('option');
+                    option.value = car;
+                    option.textContent = `🚫 ${car}`;
+                    option.disabled = true;
+                    carSelect.appendChild(option);
+                });
+            }
+
+            carSelect.onchange = () => {
+                this.socket.emit('update_driver_car', {
+                    sessionId: session.id,
+                    driverName: driver.name,
+                    car: carSelect.value === 'auto-assign' ? null : carSelect.value
+                });
+            };
+
+            // Remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'btn btn-danger btn-small';
+            removeBtn.innerHTML = '<span>🗑️</span> Remove';
+            removeBtn.onclick = () => {
+                if (confirm(`Remove ${driver.name} from this session?`)) {
+                    this.socket.emit('remove_driver', {
+                        sessionId: session.id,
+                        driverName: driver.name
+                    });
+                }
+            };
+
+            controlsEl.appendChild(carSelect);
+            controlsEl.appendChild(removeBtn);
+
+            itemEl.appendChild(infoEl);
+            itemEl.appendChild(controlsEl);
+
+            return itemEl;
+        }
+
+        showAlert(message, type = 'info') {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.success-message, .error-message');
+            existingAlerts.forEach(alert => alert.remove());
+
+            const alertEl = document.createElement('div');
+            alertEl.className = type === 'error' ? 'error-message' : 'success-message';
+            alertEl.textContent = message;
+
+            // Insert at the top of the container
+            const container = document.querySelector('.container');
+            container.insertBefore(alertEl, container.firstChild);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                alertEl.remove();
+            }, 5000);
+        }
+    }
+
+    // Initialize the front desk manager when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        new FrontDeskManager();
+    });
+</script>
+</body>
+</html>

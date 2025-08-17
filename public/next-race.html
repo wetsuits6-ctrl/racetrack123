@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next Race - Public Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Fullscreen button */
+        .fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border: none;
+            color: #fff;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .fullscreen-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6);
+        }
+
+        /* Main content */
+        .main-content {
+            text-align: center;
+            max-width: 90%;
+            padding: 3rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .title {
+            font-size: clamp(3rem, 8vw, 8rem);
+            background: linear-gradient(45deg, #3498db, #2ecc71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .race-info {
+            margin-bottom: 3rem;
+        }
+
+        .race-name {
+            font-size: clamp(2rem, 5vw, 5rem);
+            color: #ffcc00;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .race-status {
+            font-size: clamp(1.5rem, 3vw, 3rem);
+            color: #ecf0f1;
+            margin-bottom: 2rem;
+        }
+
+        /* Drivers grid */
+        .drivers-section {
+            margin-top: 3rem;
+        }
+
+        .drivers-title {
+            font-size: clamp(1.8rem, 4vw, 4rem);
+            color: #3498db;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .drivers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .driver-card {
+            background: rgba(52, 152, 219, 0.2);
+            border: 2px solid #3498db;
+            border-radius: 15px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .driver-card:hover {
+            transform: scale(1.05);
+            background: rgba(52, 152, 219, 0.3);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.4);
+        }
+
+        .driver-name {
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .driver-car {
+            font-size: clamp(1.2rem, 2.5vw, 2rem);
+            color: #ffcc00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+        }
+
+        .empty-icon {
+            font-size: clamp(6rem, 12vw, 12rem);
+            margin-bottom: 2rem;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: clamp(2rem, 4vw, 4rem);
+            color: #7f8c8d;
+            margin-bottom: 1rem;
+        }
+
+        .empty-subtext {
+            font-size: clamp(1.2rem, 2.5vw, 2.5rem);
+            color: #95a5a6;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .pulsing {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .drivers-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 2rem;
+            }
+
+            .drivers-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+
+        /* Fullscreen styles */
+        :fullscreen .fullscreen-btn,
+        :-webkit-full-screen .fullscreen-btn,
+        :-moz-full-screen .fullscreen-btn {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<button class="fullscreen-btn" onclick="toggleFullscreen()">
+    📺 Full Screen
+</button>
+
+<div class="main-content">
+    <div class="title floating">🏁 NEXT RACE</div>
+
+    <div id="raceContent" class="race-info">
+        <!-- Content will be populated by JavaScript -->
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    class NextRaceDisplay {
+        constructor() {
+            this.socket = io();
+            this.currentState = null;
+
+            this.initializeElements();
+            this.setupSocketListeners();
+        }
+
+        initializeElements() {
+            this.raceContent = document.getElementById('raceContent');
+        }
+
+        setupSocketListeners() {
+            this.socket.on('connect', () => {
+                console.log('Connected to race server');
+            });
+
+            this.socket.on('state_update', (state) => {
+                this.currentState = state;
+                this.updateDisplay(state);
+            });
+
+            this.socket.on('sessions_update', (sessions) => {
+                this.updateNextRaceInfo(sessions);
+            });
+        }
+
+        updateDisplay(state) {
+            if (state.currentRace && state.raceMode !== 'finished') {
+                this.showCurrentRace(state.currentRace, state.raceMode);
+            } else {
+                this.showNextRaceInfo();
+            }
+        }
+
+        showCurrentRace(race, mode) {
+            const statusTexts = {
+                'idle': 'PREPARING TO START',
+                'countdown': 'STARTING SOON',
+                'racing': 'RACE IN PROGRESS'
+            };
+
+            const statusColors = {
+                'idle': '#f39c12',
+                'countdown': '#e74c3c',
+                'racing': '#27ae60'
+            };
+
+            this.raceContent.innerHTML = `
+                <div class="race-name">${race.name || `Race ${race.id}`}</div>
+                <div class="race-status pulsing" style="color: ${statusColors[mode] || '#f39c12'}">
+                    ${statusTexts[mode] || 'PREPARING'}
+                </div>
+
+                ${race.drivers && race.drivers.length > 0 ? `
+                    <div class="drivers-section">
+                        <div class="drivers-title">DRIVERS</div>
+                        <div class="drivers-grid">
+                            ${race.drivers.map(driver => `
+                                <div class="driver-card">
+                                    <div class="driver-name">${driver.name}</div>
+                                    <div class="driver-car">
+                                        🏎️ ${driver.car || 'Car TBA'}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : `
+                    <div class="empty-state">
+                        <div class="empty-icon">🏎️</div>
+                        <div class="empty-text">NO DRIVERS REGISTERED</div>
+                        <div class="empty-subtext">Drivers will appear here once registered</div>
+                    </div>
+                `}
+            `;
+        }
+
+        showNextRaceInfo() {
+            // This would be populated when we receive sessions_update
+            this.raceContent.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🏁</div>
+                    <div class="empty-text">NO UPCOMING RACE</div>
+                    <div class="empty-subtext">Check back later for race information</div>
+                </div>
+            `;
+        }
+
+        updateNextRaceInfo(sessions) {
+            if (!this.currentState?.currentRace && sessions.length > 0) {
+                // Show the first available session as next race
+                const nextRace = sessions[0];
+                this.raceContent.innerHTML = `
+                    <div class="race-name">${nextRace.name}</div>
+                    <div class="race-status" style="color: #3498db">
+                        NEXT RACE
+                    </div>
+
+                    ${nextRace.drivers && nextRace.drivers.length > 0 ? `
+                        <div class="drivers-section">
+                            <div class="drivers-title">REGISTERED DRIVERS</div>
+                            <div class="drivers-grid">
+                                ${nextRace.drivers.map(driver => `
+                                    <div class="driver-card">
+                                        <div class="driver-name">${driver.name}</div>
+                                        <div class="driver-car">
+                                            🏎️ ${driver.car || 'Car TBA'}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="empty-state">
+                            <div class="empty-icon">🏎️</div>
+                            <div class="empty-text">NO DRIVERS REGISTERED</div>
+                            <div class="empty-subtext">Drivers will appear here once registered</div>
+                        </div>
+                    `}
+                `;
+            }
+        }
+    }
+
+    // Fullscreen functionality
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.log(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        new NextRaceDisplay();
+    });
+</script>
+</body>
+</html>
