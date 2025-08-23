@@ -365,7 +365,13 @@ io.on('connection', (socket) => {
         state.raceMode = 'racing';
         state.currentRace.startTime = Date.now();
 
-        // 🔥 NEW: Remove the session from available sessions once race starts
+        // 🔥 UPDATED: Use RACE_TIMER_MINUTES instead of NODE_ENV
+        const raceMinutes = parseInt(process.env.RACE_TIMER_MINUTES) || 10; // Default to 10 minutes
+        const raceDuration = raceMinutes * 60 * 1000; // Convert to milliseconds
+
+        console.log(`🏁 Race started with ${raceMinutes} minute duration`);
+
+        // Remove the session from available sessions once race starts
         const sessionIndex = raceSessions.findIndex(s => s.id === state.currentRace.id);
         if (sessionIndex !== -1) {
             const removedSession = raceSessions.splice(sessionIndex, 1)[0];
@@ -373,8 +379,6 @@ io.on('connection', (socket) => {
             // Immediately notify all front desk clients about the updated sessions list
             io.emit('sessions_update', raceSessions);
         }
-
-        const raceDuration = process.env.NODE_ENV === 'dev' ? 60 * 1000 : 600 * 1000;
 
         raceTimer = setTimeout(() => {
             state.raceMode = 'finished';
@@ -445,12 +449,41 @@ io.on('connection', (socket) => {
     });
 
     socket.on('record_lap', ({ driverName, lapTime }) => {
-        if (!state.currentRace || state.raceMode !== 'racing') return;
+        console.log(`Lap recorded: ${driverName} - ${lapTime}ms`);
+
+        if (!state.currentRace || state.raceMode !== 'racing') {
+            socket.emit('error_message', 'No active race to record lap');
+            return;
+        }
+
+        // Validate driver exists in current race
+        const driverExists = state.currentRace.drivers.find(d => d.name === driverName);
+        if (!driverExists) {
+            socket.emit('error_message', `Driver ${driverName} not found in current race`);
+            return;
+        }
+
+        // Initialize driver's lap array if it doesn't exist
         if (!state.currentRace.laps[driverName]) {
             state.currentRace.laps[driverName] = [];
         }
+
+        // Add the lap time
         state.currentRace.laps[driverName].push(lapTime);
-        io.emit('lap_update', { driverName, lapTime, lapNumber: state.currentRace.laps[driverName].length });
+
+        const lapNumber = state.currentRace.laps[driverName].length;
+
+        console.log(`✅ Lap ${lapNumber} recorded for ${driverName}: ${(lapTime/1000).toFixed(3)}s`);
+
+        // Emit lap update to all clients
+        io.emit('lap_update', {
+            driverName,
+            lapTime,
+            lapNumber,
+            totalLaps: state.currentRace.laps[driverName].length
+        });
+
+        io.emit('state_update', getClientState());
     });
 
     socket.on('disconnect', () => {

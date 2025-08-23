@@ -631,7 +631,7 @@
             const nameInput = document.createElement('input');
             nameInput.type = 'text';
             nameInput.placeholder = 'Enter driver name';
-            nameInput.maxLength = 30; // Add character limit
+            nameInput.maxLength = 30;
 
             // Real-time validation for driver names
             nameInput.addEventListener('input', (e) => {
@@ -650,7 +650,7 @@
             nameGroup.appendChild(nameLabel);
             nameGroup.appendChild(nameInput);
 
-            // Car selection with better auto-assign logic
+            // Car selection - CLEANED UP VERSION
             const carGroup = document.createElement('div');
             carGroup.className = 'input-group';
 
@@ -660,40 +660,24 @@
             const carSelect = document.createElement('select');
             carSelect.className = 'car-selector';
 
-            // Auto-assign option with better description
+            // Auto-assign option - NO EMOJI
             const autoOption = document.createElement('option');
             autoOption.value = 'auto-assign';
-            autoOption.textContent = '🎯 Random Auto-assign';
+            autoOption.textContent = 'Auto-assign';
             autoOption.selected = true;
             carSelect.appendChild(autoOption);
 
-            // Available cars with better visual indicators
+            // Available cars - NO EMOJIS
             const usedCars = session.drivers.map(d => d.car).filter(Boolean);
             const availableCars = this.allCars.filter(car => !usedCars.includes(car));
 
-            // Show available cars
+            // Show only available cars (no disabled section)
             availableCars.forEach(car => {
                 const option = document.createElement('option');
                 option.value = car;
-                option.textContent = `🚗 ${car}`;
+                option.textContent = car; // Just the car name, no emoji
                 carSelect.appendChild(option);
             });
-
-            // Show used cars as disabled for reference
-            if (usedCars.length > 0) {
-                const separator = document.createElement('option');
-                separator.disabled = true;
-                separator.textContent = '--- Already Assigned ---';
-                carSelect.appendChild(separator);
-
-                usedCars.forEach(car => {
-                    const option = document.createElement('option');
-                    option.value = car;
-                    option.textContent = `🚫 ${car} (In Use)`;
-                    option.disabled = true;
-                    carSelect.appendChild(option);
-                });
-            }
 
             carGroup.appendChild(carLabel);
             carGroup.appendChild(carSelect);
@@ -785,28 +769,7 @@
             return formEl;
         }
 
-        createDriversList(session) {
-            const listEl = document.createElement('div');
-            listEl.className = 'drivers-list';
-
-            if (session.drivers.length === 0) {
-                const emptyState = document.createElement('div');
-                emptyState.className = 'empty-state';
-                emptyState.innerHTML = `
-                        <div class="empty-state-icon">👤</div>
-                        <p>No drivers added yet</p>
-                    `;
-                listEl.appendChild(emptyState);
-                return listEl;
-            }
-
-            session.drivers.forEach(driver => {
-                const driverItem = this.createDriverItem(session, driver);
-                listEl.appendChild(driverItem);
-            });
-
-            return listEl;
-        }
+// Also replace the createDriverItem method with this updated version:
 
         createDriverItem(session, driver) {
             const itemEl = document.createElement('div');
@@ -822,7 +785,8 @@
 
             const carEl = document.createElement('div');
             carEl.className = 'driver-car';
-            carEl.textContent = driver.car ? `🚗 ${driver.car}` : '🎯 Auto-assigned on race start';
+            // CLEANED UP - no emojis
+            carEl.textContent = driver.car ? `Car: ${driver.car}` : 'Auto-assigned on race start';
 
             infoEl.appendChild(nameEl);
             infoEl.appendChild(carEl);
@@ -831,18 +795,18 @@
             const controlsEl = document.createElement('div');
             controlsEl.className = 'driver-controls';
 
-            // Enhanced car selector
+            // Enhanced car selector - CLEANED UP
             const carSelect = document.createElement('select');
             carSelect.className = 'car-selector';
 
-            // Auto-assign option
+            // Auto-assign option - NO EMOJI
             const autoOption = document.createElement('option');
             autoOption.value = 'auto-assign';
-            autoOption.textContent = '🎯 Random Auto-assign';
+            autoOption.textContent = 'Auto-assign';
             if (!driver.car) autoOption.selected = true;
             carSelect.appendChild(autoOption);
 
-            // Available cars (excluding cars used by other drivers)
+            // Available cars (excluding cars used by other drivers) - NO EMOJIS
             const carsUsedByOthers = session.drivers
                 .filter(d => d.name !== driver.name)
                 .map(d => d.car)
@@ -852,26 +816,12 @@
             availableCars.forEach(car => {
                 const option = document.createElement('option');
                 option.value = car;
-                option.textContent = `🚗 ${car}`;
+                option.textContent = car; // Just the car name, no emoji
                 if (car === driver.car) option.selected = true;
                 carSelect.appendChild(option);
             });
 
-            // Show unavailable cars for reference
-            if (carsUsedByOthers.length > 0) {
-                const separator = document.createElement('option');
-                separator.disabled = true;
-                separator.textContent = '--- Used by Others ---';
-                carSelect.appendChild(separator);
-
-                carsUsedByOthers.forEach(car => {
-                    const option = document.createElement('option');
-                    option.value = car;
-                    option.textContent = `🚫 ${car}`;
-                    option.disabled = true;
-                    carSelect.appendChild(option);
-                });
-            }
+            // NO "Used by Others" section - keep it clean and simple
 
             carSelect.onchange = () => {
                 this.socket.emit('update_driver_car', {
@@ -902,6 +852,30 @@
 
             return itemEl;
         }
+
+        createDriversList(session) {
+            const listEl = document.createElement('div');
+            listEl.className = 'drivers-list';
+
+            if (session.drivers.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                        <div class="empty-state-icon">👤</div>
+                        <p>No drivers added yet</p>
+                    `;
+                listEl.appendChild(emptyState);
+                return listEl;
+            }
+
+            session.drivers.forEach(driver => {
+                const driverItem = this.createDriverItem(session, driver);
+                listEl.appendChild(driverItem);
+            });
+
+            return listEl;
+        }
+
 
         showAlert(message, type = 'info') {
             // Remove existing alerts

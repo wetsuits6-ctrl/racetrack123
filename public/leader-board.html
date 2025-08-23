@@ -690,25 +690,32 @@
     </div>
 
     <!-- Live Leaderboard -->
-    <div class="table-container">
-        <table id="liveLeaderboard">
-            <thead>
-            <tr>
-                <th>Pos</th>
-                <th>Driver</th>
-                <th>Car</th>
-                <th>Laps</th>
-                <th>Best</th>
-                <th>Last</th>
-                <th>Gap</th>
-            </tr>
-            </thead>
-            <tbody id="liveLeaderboardBody">
-            <tr>
-                <td colspan="7" class="no-data">No active race</td>
-            </tr>
-            </tbody>
-        </table>
+    <div class="leaderboard-section" id="liveLeaderboardSection">
+        <h2 class="section-title">
+            <span class="live-indicator"></span>
+            <span>🏎️</span>
+            Live Leaderboard
+        </h2>
+        <div class="table-container">
+            <table id="liveLeaderboard">
+                <thead>
+                <tr>
+                    <th>Pos</th>
+                    <th>Driver</th>
+                    <th>Car</th>
+                    <th>Laps</th>
+                    <th>Best</th>
+                    <th>Last</th>
+                    <th>Gap</th>
+                </tr>
+                </thead>
+                <tbody id="liveLeaderboardBody">
+                <tr>
+                    <td colspan="7" class="no-data">No active race</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -736,7 +743,6 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-
     class LargeDisplayLeaderboard {
         constructor() {
             this.socket = io({
@@ -776,8 +782,6 @@
             // Leaderboard elements
             this.liveLeaderboardSection = document.getElementById('liveLeaderboardSection');
             this.liveLeaderboardBody = document.getElementById('liveLeaderboardBody');
-            this.finalResultsSection = document.getElementById('finalResultsSection');
-            this.finalResultsBody = document.getElementById('finalResultsBody');
 
             // Login modal elements
             this.loginBtn = document.getElementById('loginBtn');
@@ -790,38 +794,33 @@
         }
 
         setupEventListeners() {
-
             if (this.loginBtn) {
                 this.loginBtn.addEventListener('click', () => {
-                    console.log('Login button clicked');
                     this.openLoginModal();
                 });
             }
 
-            // Login modal submit button
             if (this.submitLoginBtn) {
                 this.submitLoginBtn.addEventListener('click', () => {
                     this.submitLogin();
                 });
             }
 
-            // Login modal close button
             if (this.closeLoginBtn) {
                 this.closeLoginBtn.addEventListener('click', () => {
                     this.closeLoginModal();
                 });
             }
 
-            // Enter key in password input
             if (this.passwordInput) {
                 this.passwordInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
+                        e.preventDefault();
                         this.submitLogin();
                     }
                 });
             }
 
-            // Close modal when clicking outside
             if (this.loginModal) {
                 this.loginModal.addEventListener('click', (e) => {
                     if (e.target === this.loginModal) {
@@ -830,24 +829,18 @@
                 });
             }
 
-            // Fullscreen button handler
             if (this.fullscreenBtn) {
                 this.fullscreenBtn.addEventListener('click', () => {
                     this.toggleFullscreen();
                 });
             }
 
-            // Listen for fullscreen changes to hide/show buttons
             document.addEventListener('fullscreenchange', () => {
                 this.handleFullscreenChange();
             });
-
-            // For Safari
             document.addEventListener('webkitfullscreenchange', () => {
                 this.handleFullscreenChange();
             });
-
-            // For Firefox
             document.addEventListener('mozfullscreenchange', () => {
                 this.handleFullscreenChange();
             });
@@ -855,12 +848,10 @@
 
         setupSocketListeners() {
             this.socket.on('connect', () => {
-                console.log('Connected to race server');
                 this.updateConnectionStatus(true);
             });
 
             this.socket.on('disconnect', (reason) => {
-                console.log(`Disconnected: ${reason}`);
                 this.updateConnectionStatus(false);
             });
 
@@ -879,12 +870,10 @@
             });
         }
 
-        // Fixed fullscreen functionality
         toggleFullscreen() {
             if (!document.fullscreenElement &&
                 !document.webkitFullscreenElement &&
                 !document.mozFullScreenElement) {
-                // Enter fullscreen
                 const elem = document.documentElement;
                 if (elem.requestFullscreen) {
                     elem.requestFullscreen();
@@ -894,7 +883,6 @@
                     elem.mozRequestFullScreen();
                 }
             } else {
-                // Exit fullscreen
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
                 } else if (document.webkitExitFullscreen) {
@@ -905,38 +893,27 @@
             }
         }
 
-        // Handle fullscreen state changes
         handleFullscreenChange() {
             const isFullscreen = !!(document.fullscreenElement ||
                 document.webkitFullscreenElement ||
                 document.mozFullScreenElement);
 
             if (isFullscreen) {
-                // Hide buttons when in fullscreen
                 if (this.fullscreenBtn) this.fullscreenBtn.style.display = 'none';
                 if (this.loginBtn) this.loginBtn.style.display = 'none';
-                // Reduce padding for fullscreen
                 document.body.style.padding = '1rem';
-
-                // Create and inject fullscreen status bar
                 this.createFullscreenStatusBar();
             } else {
-                // Show buttons when not in fullscreen
                 if (this.fullscreenBtn) this.fullscreenBtn.style.display = 'block';
                 if (this.loginBtn) this.loginBtn.style.display = 'flex';
-                // Restore normal padding
                 document.body.style.padding = '1.5rem';
-
-                // Remove fullscreen status bar
                 this.removeFullscreenStatusBar();
             }
         }
-        // Create status bar for fullscreen mode
+
         createFullscreenStatusBar() {
-            // Remove existing status bar if any
             this.removeFullscreenStatusBar();
 
-            // Create status bar container
             const statusBar = document.createElement('div');
             statusBar.className = 'fullscreen-status-bar';
             statusBar.id = 'fullscreenStatusBar';
@@ -944,66 +921,54 @@
             // Status item
             const statusItem = document.createElement('div');
             statusItem.className = 'fullscreen-status-item';
-
             const statusIndicator = document.createElement('span');
             statusIndicator.className = 'fullscreen-status-indicator status-idle';
             statusIndicator.id = 'fullscreenStatusIndicator';
-
             const statusText = document.createElement('span');
             statusText.id = 'fullscreenStatusText';
             statusText.textContent = 'Waiting for Race';
-
             statusItem.appendChild(statusIndicator);
             statusItem.appendChild(statusText);
 
             // Flag item
             const flagItem = document.createElement('div');
             flagItem.className = 'fullscreen-status-item';
-
             const flagLabel = document.createElement('span');
             flagLabel.textContent = 'Flag:';
-
             const flagIndicator = document.createElement('div');
             flagIndicator.className = 'fullscreen-flag-indicator flag-green';
             flagIndicator.id = 'fullscreenFlagIndicator';
             flagIndicator.textContent = 'GRN';
-
             flagItem.appendChild(flagLabel);
             flagItem.appendChild(flagIndicator);
 
             // Timer item
             const timerItem = document.createElement('div');
             timerItem.className = 'fullscreen-status-item';
-
             const timerLabel = document.createElement('span');
             timerLabel.textContent = 'Time:';
-
             const timer = document.createElement('span');
             timer.className = 'fullscreen-race-timer';
             timer.id = 'fullscreenRaceTimer';
             timer.textContent = '00:00';
-
             timerItem.appendChild(timerLabel);
             timerItem.appendChild(timer);
 
-            // Add all items to status bar
             statusBar.appendChild(statusItem);
             statusBar.appendChild(flagItem);
             statusBar.appendChild(timerItem);
 
-            // Insert status bar into the section title
-            const sectionTitle = this.liveLeaderboardSection.querySelector('.section-title');
+            // Insert status bar with null check
+            const sectionTitle = this.liveLeaderboardSection?.querySelector('.section-title');
             if (sectionTitle) {
                 sectionTitle.appendChild(statusBar);
             }
 
-            // Update status bar with current state
             if (this.currentState) {
                 this.updateFullscreenStatus(this.currentState);
             }
         }
 
-// Remove fullscreen status bar
         removeFullscreenStatusBar() {
             const existingStatusBar = document.getElementById('fullscreenStatusBar');
             if (existingStatusBar) {
@@ -1011,9 +976,7 @@
             }
         }
 
-// Update fullscreen status elements
         updateFullscreenStatus(state) {
-            // Only update if in fullscreen mode
             const isFullscreen = !!(document.fullscreenElement ||
                 document.webkitFullscreenElement ||
                 document.mozFullScreenElement);
@@ -1026,44 +989,41 @@
             const fullscreenRaceTimer = document.getElementById('fullscreenRaceTimer');
 
             if (fullscreenStatusIndicator && fullscreenStatusText) {
-                // Update status
                 const statusTexts = {
                     'idle': 'Waiting for Race',
                     'countdown': 'Race Starting...',
                     'racing': 'Race in Progress',
                     'finished': 'Race Finished'
                 };
-
                 fullscreenStatusIndicator.className = `fullscreen-status-indicator status-${state.raceMode}`;
                 fullscreenStatusText.textContent = statusTexts[state.raceMode] || 'Unknown Status';
             }
 
             if (fullscreenFlagIndicator) {
-                // Update flag
                 const flagTexts = {
                     'green': 'GRN',
                     'yellow': 'YEL',
                     'red': 'RED',
                     'checkered': 'FIN'
                 };
-
                 fullscreenFlagIndicator.textContent = flagTexts[state.flag] || state.flag.toUpperCase();
                 fullscreenFlagIndicator.className = `fullscreen-flag-indicator flag-${state.flag}`;
             }
 
-            if (fullscreenRaceTimer) {
-                // Timer will be updated by the existing timer interval
-                const currentTimer = this.raceTimer.textContent;
-                fullscreenRaceTimer.textContent = currentTimer;
+            if (fullscreenRaceTimer && this.raceTimer) {
+                fullscreenRaceTimer.textContent = this.raceTimer.textContent;
             }
         }
+
         updateConnectionStatus(connected) {
-            if (connected) {
-                this.connectionStatus.textContent = '🟢 Connected';
-                this.connectionStatus.className = 'connection-status connected';
-            } else {
-                this.connectionStatus.textContent = '🔴 Disconnected';
-                this.connectionStatus.className = 'connection-status disconnected';
+            if (this.connectionStatus) {
+                if (connected) {
+                    this.connectionStatus.textContent = '🟢 Connected';
+                    this.connectionStatus.className = 'connection-status connected';
+                } else {
+                    this.connectionStatus.textContent = '🔴 Disconnected';
+                    this.connectionStatus.className = 'connection-status disconnected';
+                }
             }
         }
 
@@ -1076,16 +1036,20 @@
                 'finished': 'Race Finished'
             };
 
-            this.statusIndicator.className = `status-indicator status-${state.raceMode}`;
-            this.statusText.textContent = statusTexts[state.raceMode] || 'Unknown Status';
+            if (this.statusIndicator) {
+                this.statusIndicator.className = `status-indicator status-${state.raceMode}`;
+            }
+            if (this.statusText) {
+                this.statusText.textContent = statusTexts[state.raceMode] || 'Unknown Status';
+            }
 
             // Update header styling for racing state
             if (state.raceMode === 'racing') {
-                this.mainHeader.classList.add('racing');
-                this.liveLeaderboardSection.classList.add('racing');
+                if (this.mainHeader) this.mainHeader.classList.add('racing');
+                if (this.liveLeaderboardSection) this.liveLeaderboardSection.classList.add('racing');
             } else {
-                this.mainHeader.classList.remove('racing');
-                this.liveLeaderboardSection.classList.remove('racing');
+                if (this.mainHeader) this.mainHeader.classList.remove('racing');
+                if (this.liveLeaderboardSection) this.liveLeaderboardSection.classList.remove('racing');
             }
 
             // Update flag indicator
@@ -1096,15 +1060,22 @@
                 'checkered': 'FIN'
             };
 
-            this.flagIndicator.textContent = flagTexts[state.flag] || state.flag.toUpperCase();
-            this.flagIndicator.className = `flag-indicator flag-${state.flag}`;
+            if (this.flagIndicator) {
+                this.flagIndicator.textContent = flagTexts[state.flag] || state.flag.toUpperCase();
+                this.flagIndicator.className = `flag-indicator flag-${state.flag}`;
+            }
 
-            // Update current race info
+            // Update current race info and timer
             if (state.currentRace) {
-                this.currentRaceInfo.classList.remove('hidden');
-                this.currentRaceName.textContent = state.currentRace.name || `Race ${state.currentRace.id}`;
-                this.driverCount.textContent = state.currentRace.drivers ? state.currentRace.drivers.length : 0;
+                if (this.currentRaceInfo) this.currentRaceInfo.classList.remove('hidden');
+                if (this.currentRaceName) {
+                    this.currentRaceName.textContent = state.currentRace.name || `Race ${state.currentRace.id}`;
+                }
+                if (this.driverCount) {
+                    this.driverCount.textContent = state.currentRace.drivers ? state.currentRace.drivers.length : 0;
+                }
 
+                // Race timer logic
                 if (state.raceMode === 'racing' && state.currentRace.startTime) {
                     this.raceStartTime = state.currentRace.startTime;
                     this.startRaceTimer();
@@ -1112,30 +1083,25 @@
                     this.stopRaceTimer();
                 }
             } else {
-                this.currentRaceInfo.classList.add('hidden');
+                if (this.currentRaceInfo) this.currentRaceInfo.classList.add('hidden');
                 this.stopRaceTimer();
             }
 
-            // Show final results if race is finished
-            if (state.raceMode === 'finished' && state.lastResults && state.lastResults.length > 0) {
-                this.showFinalResults(state.lastResults);
-            } else {
-                this.finalResultsSection.classList.add('hidden');
-            }
             this.updateFullscreenStatus(state);
         }
 
         startRaceTimer() {
-            if (this.timerInterval) clearInterval(this.timerInterval);
+            if (this.timerInterval) {
+                clearInterval(this.timerInterval);
+            }
 
             this.timerInterval = setInterval(() => {
-                if (this.raceStartTime) {
+                if (this.raceStartTime && this.raceTimer) {
                     const elapsed = Date.now() - this.raceStartTime;
                     const minutes = Math.floor(elapsed / 60000);
                     const seconds = Math.floor((elapsed % 60000) / 1000);
                     const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-                    // Update main timer
                     this.raceTimer.textContent = timeString;
 
                     // Update fullscreen timer if it exists
@@ -1153,8 +1119,7 @@
                 this.timerInterval = null;
             }
 
-            // Reset both timers
-            this.raceTimer.textContent = '00:00';
+            if (this.raceTimer) this.raceTimer.textContent = '00:00';
             const fullscreenTimer = document.getElementById('fullscreenRaceTimer');
             if (fullscreenTimer) {
                 fullscreenTimer.textContent = '00:00';
@@ -1162,6 +1127,10 @@
         }
 
         updateLeaderboard(state) {
+            if (!this.liveLeaderboardBody) {
+                return;
+            }
+
             if (!state.currentRace || state.raceMode === 'idle') {
                 this.liveLeaderboardBody.innerHTML = '<tr><td colspan="7" class="no-data">No active race</td></tr>';
                 return;
@@ -1179,33 +1148,53 @@
         processLapData(race) {
             const data = [];
 
-            for (const [driverName, laps] of Object.entries(race.laps || {})) {
-                const driver = race.drivers?.find(d => d.name === driverName) || { name: driverName, car: 'N/A' };
-                const totalLaps = laps.length;
-                const bestLap = totalLaps > 0 ? Math.min(...laps) : null;
-                const lastLap = totalLaps > 0 ? laps[laps.length - 1] : null;
-                const totalTime = laps.reduce((sum, lap) => sum + lap, 0);
+            // 🔥 FIXED: Include ALL drivers from race.drivers, not just those with laps
+            if (race.drivers) {
+                race.drivers.forEach(driver => {
+                    const laps = race.laps && race.laps[driver.name] ? race.laps[driver.name] : [];
+                    const totalLaps = laps.length;
+                    const bestLap = totalLaps > 0 ? Math.min(...laps) : null;
+                    const lastLap = totalLaps > 0 ? laps[laps.length - 1] : null;
+                    const totalTime = laps.reduce((sum, lap) => sum + lap, 0);
 
-                data.push({
-                    driver: driver.name,
-                    car: driver.car || 'N/A',
-                    laps: totalLaps,
-                    bestLap,
-                    lastLap,
-                    totalTime
+                    data.push({
+                        driver: driver.name,
+                        car: driver.car || 'TBA',
+                        laps: totalLaps,
+                        bestLap,
+                        lastLap,
+                        totalTime
+                    });
                 });
             }
 
-            // Sort by laps (desc), then by total time (asc)
+            // 🔥 FIXED: Correct sorting logic that maintains proper racing positions
             data.sort((a, b) => {
-                if (a.laps !== b.laps) return b.laps - a.laps;
-                return a.totalTime - b.totalTime;
+                // First priority: More laps = better position
+                if (a.laps !== b.laps) {
+                    return b.laps - a.laps; // Higher lap count wins
+                }
+
+                // Second priority: If both have 0 laps, sort alphabetically for consistency
+                if (a.laps === 0 && b.laps === 0) {
+                    return a.driver.localeCompare(b.driver);
+                }
+
+                // Third priority: Same lap count (and > 0), faster total time wins
+                if (a.laps > 0 && b.laps > 0) {
+                    return a.totalTime - b.totalTime; // Lower total time = faster = better position
+                }
+
+                // Fallback: alphabetical
+                return a.driver.localeCompare(b.driver);
             });
 
             return data;
         }
 
         renderLeaderboard(data) {
+            if (!this.liveLeaderboardBody) return;
+
             this.liveLeaderboardBody.innerHTML = '';
 
             data.forEach((row, index) => {
@@ -1244,32 +1233,26 @@
         }
 
         handleLapUpdate(lapData) {
-            console.log(`New lap: ${lapData.driverName} - ${this.formatTime(lapData.lapTime)}`);
-            // Refresh display immediately when new lap data comes in
-            if (this.currentState) {
+            console.log(`Processing lap update for ${lapData.driverName}: ${this.formatTime(lapData.lapTime)}`);
+
+            // Update the current state immediately
+            if (this.currentState && this.currentState.currentRace) {
+                if (!this.currentState.currentRace.laps) {
+                    this.currentState.currentRace.laps = {};
+                }
+                if (!this.currentState.currentRace.laps[lapData.driverName]) {
+                    this.currentState.currentRace.laps[lapData.driverName] = [];
+                }
+
+                // Add the new lap time if we don't already have it
+                const currentLaps = this.currentState.currentRace.laps[lapData.driverName];
+                if (currentLaps.length < lapData.lapNumber) {
+                    currentLaps.push(lapData.lapTime);
+                }
+
+                // Update the leaderboard immediately
                 this.updateLeaderboard(this.currentState);
             }
-        }
-
-        showFinalResults(results) {
-            this.finalResultsSection.classList.remove('hidden');
-            this.finalResultsBody.innerHTML = '';
-
-            results.forEach((result, index) => {
-                const tr = document.createElement('tr');
-                const position = index + 1;
-
-                tr.innerHTML = `
-                <td class="position-${Math.min(position, 3)}">${position}</td>
-                <td>${result.driverName}</td>
-                <td>${result.totalLaps}</td>
-                <td class="lap-time">${this.formatTime(result.totalTime)}</td>
-                <td class="lap-time">${this.formatTime(result.bestLap)}</td>
-                <td class="lap-time">${this.formatTime(result.averageLap)}</td>
-            `;
-
-                this.finalResultsBody.appendChild(tr);
-            });
         }
 
         formatTime(milliseconds) {
@@ -1287,7 +1270,6 @@
         }
 
         startUpdateLoop() {
-            // Refresh display every 3 seconds for reliability
             setInterval(() => {
                 if (this.currentState) {
                     this.updateLeaderboard(this.currentState);
@@ -1295,9 +1277,7 @@
             }, 3000);
         }
 
-        // Login Modal Methods - THESE WERE DEFINED BUT NOT CONNECTED!
         openLoginModal() {
-            console.log('Opening login modal...');
             if (this.loginModal) {
                 this.loginModal.style.display = 'flex';
                 if (this.passwordInput) {
@@ -1307,9 +1287,6 @@
                 if (this.loginError) {
                     this.loginError.style.display = 'none';
                 }
-                console.log('Modal should now be visible');
-            } else {
-                console.error('Modal element not found!');
             }
         }
 
@@ -1320,7 +1297,7 @@
         }
 
         async submitLogin() {
-            const password = this.passwordInput.value.trim();
+            const password = this.passwordInput?.value.trim();
             if (!password) return;
 
             try {
@@ -1338,33 +1315,36 @@
                 if (result.success && result.redirect) {
                     window.location.href = result.redirect;
                 } else {
-                    this.loginError.style.display = 'block';
-                    this.passwordInput.value = '';
-                    this.passwordInput.focus();
+                    if (this.loginError) this.loginError.style.display = 'block';
+                    if (this.passwordInput) {
+                        this.passwordInput.value = '';
+                        this.passwordInput.focus();
+                    }
 
-                    // Hide error after 3 seconds
                     setTimeout(() => {
-                        this.loginError.style.display = 'none';
+                        if (this.loginError) this.loginError.style.display = 'none';
                     }, 3000);
                 }
             } catch (error) {
                 console.error(`Login error: ${error.message}`);
-                this.loginError.textContent = 'Connection error. Please try again.';
-                this.loginError.style.display = 'block';
+                if (this.loginError) {
+                    this.loginError.textContent = 'Connection error. Please try again.';
+                    this.loginError.style.display = 'block';
 
-                setTimeout(() => {
-                    this.loginError.style.display = 'none';
-                    this.loginError.textContent = 'Invalid access key';
-                }, 3000);
+                    setTimeout(() => {
+                        this.loginError.style.display = 'none';
+                        this.loginError.textContent = 'Invalid access key';
+                    }, 3000);
+                }
             }
         }
-
     }
 
     // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', () => {
         new LargeDisplayLeaderboard();
     });
+
 </script>
 </body>
 </html>
